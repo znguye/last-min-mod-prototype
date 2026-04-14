@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Last-Minute Modification Wall — Prototype</title>
+  <style>
+    :root {
+      --bg-default: #ffffff;
+      --bg-neutral: #fafaf5;
+      --bg-page: #ffffff;
+      --bg-btn-primary: #14140f;
+      --bg-btn-secondary: transparent;
+      --bg-brand-highlight: #beff50;
+      --bg-overlay: rgba(20, 20, 15, 0.5);
+      --bg-highlight-neutral: #f5f5eb;
+      --bg-positive: #d6ffef;
+      --text-primary: #14140f;
+      --text-secondary: #6e6e64;
+      --text-btn-primary: #ffffff;
+      --text-positive: #007d4b;
+      --border-default: #d2d2c8;
+      --border-light: #e8e8e0;
+      --border-btn-secondary: #14140f;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-xl: 20px;
+      --radius-full: 100px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: #e8e8e0;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+      height: 100dvh;
+    }
+
+    /* === DEVICE === */
+    .device {
+      width: 100%; max-width: 393px; height: 100dvh;
+      margin: 0 auto; background: var(--bg-page);
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+
+    /* === STATUS BAR === */
+    .status-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px 3px; background: var(--bg-neutral);
+      font-size: 17px; font-weight: 600;
+    }
+    .status-icons { display: flex; gap: 5px; align-items: center; }
+    .status-icons svg { width: 16px; height: 16px; }
+
+    /* === NAV BAR === */
+    .nav-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px 12px; background: var(--bg-neutral);
+      min-height: 51px;
+    }
+    .nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .nav-icon svg { width: 24px; height: 24px; }
+    .nav-title { font-size: 19px; font-weight: 500; text-align: center; }
+
+    /* === SCROLL === */
+    .scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+    .content-pad { padding: 0 16px 120px; }
+
+    /* === HEADER === */
+    .booking-header { padding-top: 16px; }
+    .booking-title { font-size: 33px; font-weight: 500; line-height: 1.2; letter-spacing: -0.3px; }
+    .booking-sub { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 14px; color: var(--text-secondary); }
+    .booking-sub svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    /* === BUTTON ROW === */
+    .btn-row { display: flex; gap: 8px; margin-top: 12px; }
+    .btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      height: 44px; padding: 0 16px; border-radius: var(--radius-md);
+      font-family: var(--font); font-size: 16px; font-weight: 500;
+      border: none; cursor: pointer; white-space: nowrap;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { opacity: 0.85; transform: scale(0.98); }
+    .btn-primary { background: var(--bg-btn-primary); color: var(--text-btn-primary); }
+    .btn-outline { background: var(--bg-btn-secondary); color: var(--text-primary); border: 1px solid var(--border-btn-secondary); }
+    .btn-full { width: 100%; }
+    .btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    /* === CARD === */
+    .card {
+      background: var(--bg-default); border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg); overflow: hidden; margin-top: 16px;
+    }
+
+    /* === FLIGHT CARD === */
+    .fc-top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px 8px; border-bottom: 1px solid var(--border-default);
+    }
+    .fc-provider { display: flex; align-items: center; gap: 6px; }
+    .fc-logo {
+      width: 18px; height: 18px; border-radius: var(--radius-sm);
+      background: #ffcc00; display: flex; align-items: center; justify-content: center;
+      font-size: 8px; font-weight: 800; color: #14140f;
+    }
+    .fc-code { font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 1.4px; }
+    .fc-badge {
+      font-size: 14px; font-weight: 500; color: var(--text-positive);
+      background: var(--bg-positive); padding: 0 4px; border-radius: var(--radius-sm);
+    }
+
+    .fc-route { padding: 16px; }
+    .fc-cities {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 14px; color: var(--text-secondary);
+    }
+    .fc-city-left { display: flex; gap: 2px; }
+    .fc-city-right { display: flex; gap: 2px; justify-content: flex-end; }
+    .fc-city-code { font-weight: 500; color: var(--text-primary); }
+
+    .fc-times {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-top: 2px;
+    }
+    .fc-time-col { display: flex; flex-direction: column; }
+    .fc-time-col.right { align-items: flex-end; }
+    .fc-time { font-size: 23px; font-weight: 500; line-height: 32px; }
+    .fc-terminal { font-size: 14px; color: var(--text-secondary); }
+
+    .fc-center {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      flex-shrink: 0; gap: 0; padding-top: 4px;
+    }
+    .fc-center svg { width: 24px; height: 24px; color: var(--text-secondary); }
+    .fc-duration { font-size: 14px; color: var(--text-secondary); }
+
+    .fc-gate-seat {
+      display: flex; margin: 0 16px 16px; background: var(--bg-highlight-neutral);
+      border-radius: var(--radius-md); overflow: hidden;
+    }
+    .fc-gs-item {
+      flex: 1; text-align: center; padding: 8px 0;
+    }
+    .fc-gs-item + .fc-gs-item { border-left: 1px solid var(--border-default); }
+    .fc-gs-label { font-size: 14px; color: var(--text-secondary); }
+    .fc-gs-value { font-size: 14px; font-weight: 500; }
+
+    /* === WHAT'S INCLUDED === */
+    .card-section { padding: 16px; }
+    .card-section-title { font-size: 16px; font-weight: 500; margin-bottom: 12px; }
+    .list-item {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; color: var(--text-secondary); padding: 2px 0;
+    }
+    .list-item svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-secondary); }
+
+    /* === BOOKING CONDITIONS === */
+    .info-box {
+      background: var(--bg-neutral); border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg); padding: 12px 16px;
+      display: flex; gap: 8px; align-items: flex-start;
+      margin: 12px 0;
+    }
+    .info-box svg { width: 24px; height: 24px; flex-shrink: 0; margin-top: -1px; }
+    .info-box-text { font-size: 14px; font-weight: 500; line-height: 1.4; }
+
+    /* === BOTTOM SHEET === */
+    .overlay {
+      position: fixed; inset: 0; background: var(--bg-overlay);
+      z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .overlay.active { opacity: 1; pointer-events: all; }
+
+    .sheet {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%) translateY(100%);
+      width: 100%; max-width: 393px; background: var(--bg-default);
+      border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+      z-index: 101; transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+      max-height: 92dvh; overflow-y: auto;
+    }
+    .sheet.active { transform: translateX(-50%) translateY(0); }
+    .sheet-handle { width: 36px; height: 4px; background: var(--border-default); border-radius: 2px; margin: 10px auto 0; }
+    .sheet-pad { padding: 20px 20px 36px; }
+
+    /* === WALL === */
+    .wall-icon {
+      width: 48px; height: 48px; background: #fff3e0; border-radius: var(--radius-full);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    }
+    .wall-icon svg { width: 24px; height: 24px; color: #e65100; }
+    .wall-title { font-size: 20px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+    .wall-sub { font-size: 14px; line-height: 1.5; color: var(--text-secondary); margin-bottom: 24px; }
+
+    /* === WARNING BOX (design system) === */
+    .warning-box {
+      background: #ffedb8; border-radius: var(--radius-lg);
+      padding: 12px 16px; display: flex; gap: 8px; align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .warning-box svg { width: 24px; height: 24px; flex-shrink: 0; color: #b8860b; margin-top: -1px; }
+    .warning-box-text { flex: 1; }
+    .warning-box-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--text-primary); }
+    .warning-box-sub { font-size: 14px; line-height: 1.4; color: var(--text-primary); opacity: 0.75; }
+
+    .msg-box { border: 1px solid var(--border-default); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 12px; }
+    .msg-box-header {
+      background: var(--bg-neutral); padding: 12px 16px;
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .msg-box-header svg { width: 20px; height: 20px; flex-shrink: 0; margin-top: 1px; }
+    .msg-box-h-title { font-size: 14px; font-weight: 600; line-height: 1.4; }
+    .msg-box-h-sub { font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-top: 2px; }
+    .msg-box-body { padding: 14px 16px; }
+    .msg-box-body-text { font-size: 14px; line-height: 1.5; color: var(--text-secondary); margin-bottom: 14px; }
+    .msg-box-body-text strong { color: var(--text-primary); }
+
+    .wall-or {
+      display: flex; align-items: center; gap: 12px; margin: 4px 0;
+      color: var(--text-secondary); font-size: 12px; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .wall-or::before, .wall-or::after { content: ''; flex: 1; height: 1px; background: var(--border-light); }
+
+    /* === MANAGE OPTIONS LIST === */
+    .manage-list { list-style: none; }
+    .manage-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 0; border-bottom: 1px solid var(--border-light);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .manage-item:last-child { border-bottom: none; }
+    .manage-item-left { display: flex; align-items: center; gap: 12px; }
+    .manage-item-left svg { width: 20px; height: 20px; color: var(--text-secondary); flex-shrink: 0; }
+    .manage-item-label { font-size: 15px; font-weight: 500; }
+    .manage-item-chevron svg { width: 16px; height: 16px; color: var(--text-secondary); }
+
+    .btn-tertiary {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; background: transparent; border: none; cursor: pointer;
+      font-family: var(--font); font-size: 14px; font-weight: 500;
+      color: var(--text-secondary); text-decoration: underline;
+      text-underline-offset: 2px; padding: 10px 16px; margin-top: 8px;
+    }
+
+    /* === CONFIRMATION SCREENS === */
+    .confirm { display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 20px; }
+    .confirm-icon {
+      width: 56px; height: 56px; border-radius: var(--radius-full);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+    }
+    .confirm-icon.green { background: #e8f5e9; }
+    .confirm-icon.blue { background: #e3f2fd; }
+    .confirm-icon svg { width: 28px; height: 28px; }
+    .confirm-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .confirm-body { font-size: 14px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 24px; max-width: 300px; }
+
+    .detail-box {
+      width: 100%; background: var(--bg-neutral); border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg); padding: 16px; margin-bottom: 24px; text-align: left;
+    }
+    .detail-row {
+      display: flex; justify-content: space-between; align-items: center; padding: 6px 0;
+    }
+    .detail-row + .detail-row { border-top: 1px solid var(--border-light); }
+    .detail-label { font-size: 13px; color: var(--text-secondary); }
+    .detail-value { font-size: 14px; font-weight: 600; }
+    .detail-value.green { color: #2e7d32; }
+
+    .airline-card {
+      width: 100%; background: var(--bg-neutral); border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; text-align: left;
+    }
+    .airline-logo {
+      width: 40px; height: 40px; background: var(--bg-default); border-radius: var(--radius-md);
+      border: 1px solid var(--border-light); display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #003580; margin-bottom: 12px;
+    }
+    .airline-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .airline-detail { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+    .airline-detail a { color: var(--text-primary); font-weight: 500; text-decoration: underline; text-underline-offset: 2px; }
+    .airline-tip {
+      margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-light);
+      font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+    }
+    .airline-tip strong { color: var(--text-primary); font-weight: 600; }
+
+    /* === TAB BAR === */
+    .tab-bar {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 393px; background: var(--bg-default);
+      border-top: 1px solid var(--border-light);
+      display: flex; padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+      z-index: 50;
+    }
+    .tab {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px;
+      font-size: 10px; font-weight: 500; color: var(--text-secondary);
+      border: none; background: none; cursor: pointer; padding: 4px 0;
+    }
+    .tab.active { color: var(--text-primary); }
+    .tab svg { width: 22px; height: 22px; }
+
+    /* === PROTO BADGE === */
+    .badge {
+      position: fixed; top: 8px; right: 8px;
+      background: var(--bg-brand-highlight); color: var(--text-primary);
+      font-size: 10px; font-weight: 700; padding: 3px 8px;
+      border-radius: var(--radius-full); z-index: 200;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div class="device">
+  <div class="badge">Prototype</div>
+
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <span>9:41</span>
+    <div class="status-icons">
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 11h2v4H1zM5 8h2v7H5zM9 5h2v10H9zM13 1h2v14h-2z"/></svg>
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 3a8 8 0 015.66 2.34l-1.42 1.42a6 6 0 00-8.48 0L2.34 5.34A8 8 0 018 3zm0 4a4 4 0 012.83 1.17L9.41 9.59a2 2 0 00-2.82 0L5.17 8.17A4 4 0 018 7zm0 4a.5.5 0 110 1 .5.5 0 010-1z"/></svg>
+      <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 5h12v7a1 1 0 01-1 1H3a1 1 0 01-1-1V5zm12.5 0V4.5A1.5 1.5 0 0013 3H3a1.5 1.5 0 00-1.5 1.5V5h13zm1 3.5V8h1v2h-1V8.5z"/></svg>
+    </div>
+  </div>
+
+  <!-- NAV BAR -->
+  <div class="nav-bar">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    </div>
+    <span class="nav-title">Booking details</span>
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+    </div>
+  </div>
+
+  <!-- SCROLLABLE CONTENT -->
+  <div class="scroll">
+    <div class="content-pad">
+
+      <!-- HEADER -->
+      <div class="booking-header">
+        <div class="booking-title">Flight to London</div>
+        <div class="booking-sub">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+          <span>Tue, 15 Apr</span>
+          <span style="font-weight:500;">·</span>
+          <span>Take-off tomorrow</span>
+        </div>
+
+        <!-- BUTTON ROW -->
+        <div class="btn-row">
+          <button class="btn btn-primary">Check in</button>
+          <button class="btn btn-outline" onclick="openWall()">Manage booking</button>
+        </div>
+      </div>
+
+      <!-- FLIGHT CARD -->
+      <div class="card">
+        <div class="fc-top">
+          <div class="fc-provider">
+            <div class="fc-logo">VY</div>
+            <span class="fc-code">VY8301</span>
+          </div>
+          <span class="fc-badge">On time</span>
+        </div>
+        <div class="fc-route">
+          <div class="fc-cities">
+            <div class="fc-city-left"><span class="fc-city-code">BCN</span><span> · Barcelona</span></div>
+            <div class="fc-city-right"><span>London · </span><span class="fc-city-code">LHR</span></div>
+          </div>
+          <div class="fc-times">
+            <div class="fc-time-col">
+              <span class="fc-time">14:30</span>
+              <span class="fc-terminal">Terminal: T1</span>
+            </div>
+            <div class="fc-center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+              <span class="fc-duration">1h 45m</span>
+            </div>
+            <div class="fc-time-col right">
+              <span class="fc-time">16:15</span>
+              <span class="fc-terminal">Terminal: T5</span>
+            </div>
+          </div>
+        </div>
+        <div class="fc-gate-seat">
+          <div class="fc-gs-item">
+            <div class="fc-gs-label">Gate</div>
+            <div class="fc-gs-value">B24</div>
+          </div>
+          <div class="fc-gs-item">
+            <div class="fc-gs-label">Seat</div>
+            <div class="fc-gs-value">12A</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WHAT'S INCLUDED -->
+      <div class="card">
+        <div class="card-section">
+          <div class="card-section-title">What's included</div>
+          <div class="list-item">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="5" y="3" width="10" height="14" rx="2"/><path d="M8 3V1M12 3V1"/></svg>
+            Underseat bag
+          </div>
+          <div class="list-item">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="4" y="5" width="12" height="12" rx="2"/><path d="M8 5V3M12 5V3M4 9h12"/></svg>
+            Carry-on bag
+          </div>
+        </div>
+      </div>
+
+      <!-- BOOKING CONDITIONS -->
+      <div class="card">
+        <div class="card-section">
+          <div class="card-section-title">Booking conditions</div>
+          <div class="list-item">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="10" cy="10" r="7.5"/><path d="M7 7l6 6M13 7l-6 6"/></svg>
+            Not refundable
+          </div>
+          <div class="list-item">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M4 16L16 4M6 4h4v4M14 16h-4v-4"/></svg>
+            No changes allowed
+          </div>
+          <div class="info-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <span class="info-box-text">Choose 'Manage Booking' to modify dates, route, and process the exchange</span>
+          </div>
+          <button class="btn btn-outline btn-full" onclick="openWall()">Cancel booking</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+      Home
+    </button>
+    <button class="tab active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+      Travel
+    </button>
+    <button class="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+      Spend
+    </button>
+    <button class="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+      Help
+    </button>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeWall()"></div>
+
+<!-- BOTTOM SHEET -->
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-pad" id="sheet-inner">
+
+    <!-- MANAGE BOOKING OPTIONS -->
+    <div id="s-manage">
+      <div class="wall-title" style="margin-bottom:4px">Manage booking</div>
+      <div class="wall-sub" style="margin-bottom:16px">What would you like to change?</div>
+      <ul class="manage-list">
+        <li class="manage-item" onclick="goTo('s-wall')">
+          <span class="manage-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <span class="manage-item-label">Change date / time</span>
+          </span>
+          <span class="manage-item-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+        </li>
+        <li class="manage-item">
+          <span class="manage-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10H3M16 2v4M8 2v4"/><path d="M5 4h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2z"/><path d="M3 10h18v10a2 2 0 01-2 2H5a2 2 0 01-2-2V10z"/></svg>
+            <span class="manage-item-label">Change route</span>
+          </span>
+          <span class="manage-item-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+        </li>
+        <li class="manage-item">
+          <span class="manage-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span class="manage-item-label">Change traveller details</span>
+          </span>
+          <span class="manage-item-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+        </li>
+        <li class="manage-item">
+          <span class="manage-item-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+            <span class="manage-item-label">Add extras</span>
+          </span>
+          <span class="manage-item-chevron"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- WALL DEFAULT -->
+    <div id="s-wall" class="hidden">
+      <div class="wall-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <div class="wall-title">This booking can't be modified by Perk at this stage</div>
+      <div class="warning-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div class="warning-box-text">
+          <div class="warning-box-title">Your flight departs in less than 24 hours</div>
+          <div class="warning-box-sub">Vueling VY8301 · Tue, 15 Apr at 14:30</div>
+        </div>
+      </div>
+      <div class="wall-sub" style="margin-bottom:20px">Here are your options:</div>
+
+      <!-- Cancel and rebook -->
+      <div class="msg-box">
+        <div class="msg-box-header">
+          <svg viewBox="0 0 20 20" fill="none" stroke="#14140f" stroke-width="1.5"><circle cx="10" cy="10" r="6"/><path d="M10 7v3l2 1"/></svg>
+          <div>
+            <div class="msg-box-h-title">Cancel and rebook</div>
+            <div class="msg-box-h-sub">Fastest way to get a new flight</div>
+          </div>
+        </div>
+        <div class="msg-box-body">
+          <div class="msg-box-body-text">According to your fare conditions, you can cancel this booking to receive <strong>&euro;127.40</strong> back, then rebook your flight.</div>
+          <button class="btn btn-primary btn-full" onclick="goTo('s-cancel')">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4.5 10.5l3 3 8-8"/></svg>
+            Cancel and rebook
+          </button>
+        </div>
+      </div>
+
+      <div class="wall-or">or</div>
+
+      <!-- Contact the airline -->
+      <div class="msg-box">
+        <div class="msg-box-header">
+          <svg viewBox="0 0 20 20" fill="none" stroke="#14140f" stroke-width="1.5"><path d="M3 5a2 2 0 012-2h10a2 2 0 012 2v7a2 2 0 01-2 2H8l-4 3v-3H5a2 2 0 01-2-2V5z"/></svg>
+          <div>
+            <div class="msg-box-h-title">Contact the airline directly</div>
+            <div class="msg-box-h-sub">For the most confident response</div>
+          </div>
+        </div>
+        <div class="msg-box-body">
+          <div class="msg-box-body-text">With less than 24 hours before departure, Vueling can process changes to this flight faster by working directly with their operations team.</div>
+          <button class="btn btn-outline btn-full" onclick="goTo('s-airline')">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            View Vueling contact details
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CANCEL CONFIRM -->
+    <div id="s-cancel" class="hidden">
+      <div class="confirm">
+        <div class="confirm-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="confirm-title">Cancel and rebook?</div>
+        <div class="confirm-body">Your flight BCN &rarr; LHR will be cancelled. Here's what you'll get back:</div>
+        <div class="detail-box">
+          <div class="detail-row"><span class="detail-label">Original fare</span><span class="detail-value">&euro;189.00</span></div>
+          <div class="detail-row"><span class="detail-label">Cancellation fee</span><span class="detail-value">- &euro;61.60</span></div>
+          <div class="detail-row"><span class="detail-label">Refund amount</span><span class="detail-value green">&euro;127.40</span></div>
+        </div>
+        <button class="btn btn-primary btn-full" onclick="goTo('s-rebook')" style="margin-bottom:10px">Confirm cancellation and find flights</button>
+        <button class="btn-tertiary" onclick="goTo('s-wall')">Go back</button>
+      </div>
+    </div>
+
+    <!-- REBOOK SEARCH -->
+    <div id="s-rebook" class="hidden">
+      <div class="confirm">
+        <div class="confirm-icon green">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="confirm-title">Booking cancelled</div>
+        <div class="confirm-body">&euro;127.40 will be refunded to your original payment method. Now let's find you a new flight.</div>
+        <div class="detail-box">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <span style="font-size:24px;font-weight:700">BCN</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <span style="font-size:24px;font-weight:700">LHR</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-secondary)">Tue, 15 Apr 2026 &mdash; 1 traveller</div>
+        </div>
+        <button class="btn btn-primary btn-full" style="margin-bottom:10px">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="9" r="7"/><path d="M16 16l-3.5-3.5"/></svg>
+          Search flights
+        </button>
+        <button class="btn-tertiary" onclick="closeWall()">I'll rebook later</button>
+      </div>
+    </div>
+
+    <!-- AIRLINE CONTACT -->
+    <div id="s-airline" class="hidden">
+      <div class="confirm">
+        <div class="confirm-icon blue">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1565c0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        </div>
+        <div class="confirm-title">Contact Vueling</div>
+        <div class="confirm-body">The airline can review your booking directly and may have more flexibility with modifications.</div>
+        <div class="airline-card">
+          <div class="airline-logo">VY</div>
+          <div class="airline-name">Vueling Customer Service</div>
+          <div class="airline-detail">
+            Phone: <a href="tel:+34931518158">+34 931 518 158</a><br>
+            Available: Mon&ndash;Sun, 8:00&ndash;20:00 CET
+          </div>
+          <div class="airline-tip">
+            <strong>Tip:</strong> Have your booking reference <strong>VY8301</strong> and e-ticket number ready when you call.
+          </div>
+        </div>
+        <button class="btn btn-primary btn-full" style="margin-bottom:10px">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 13.5V16a2 2 0 01-2 2A15 15 0 013 5a2 2 0 012-2h2.5a1 1 0 011 .8l.7 3.5a1 1 0 01-.3.9L7.5 9.6a12 12 0 005.4 5.4l1.4-1.4a1 1 0 01.9-.3l3.5.7a1 1 0 01.8 1z"/></svg>
+          Call Vueling
+        </button>
+        <button class="btn-tertiary" onclick="goTo('s-wall')">Go back</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const screens = ['s-manage','s-wall','s-cancel','s-rebook','s-airline'];
+const overlay = document.getElementById('overlay');
+const sheet = document.getElementById('sheet');
+
+function openWall() {
+  goTo('s-manage');
+  overlay.classList.add('active');
+  sheet.classList.add('active');
+}
+function closeWall() {
+  overlay.classList.remove('active');
+  sheet.classList.remove('active');
+}
+function goTo(id) {
+  screens.forEach(s => document.getElementById(s).classList.toggle('hidden', s !== id));
+  document.getElementById('sheet-inner').scrollTop = 0;
+}
+</script>
+</body>
+</html>
